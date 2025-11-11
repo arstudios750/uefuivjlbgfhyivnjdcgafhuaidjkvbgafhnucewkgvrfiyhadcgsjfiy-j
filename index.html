@@ -64,6 +64,8 @@
 
 <h1>CGprints - All Orders</h1>
 
+  <input type="text" id="searchInput" placeholder="Search orders..." style="margin-bottom:10px; padding:5px; width:100%;">
+  
 <div id="loader">Loading orders...</div>
 
 <table id="ordersTable" style="display:none;">
@@ -132,6 +134,47 @@ function renderOrders() {
     body.appendChild(row);
   });
 }
+  // Search filter
+document.getElementById("searchInput").addEventListener("input", (e) => {
+  const term = e.target.value.toLowerCase();
+  const filtered = orders.filter(o =>
+    o.item.toLowerCase().includes(term) ||
+    o.email.toLowerCase().includes(term)
+  );
+  renderOrders(filtered);
+});
+
+// Modify renderOrders to accept filtered list
+function renderOrders(filteredOrders = orders) {
+  const body = document.getElementById("ordersBody");
+  body.innerHTML = "";
+
+  if(filteredOrders.length === 0){
+    document.getElementById("loader").textContent = "No orders match your search.";
+    document.getElementById("ordersTable").style.display = "none";
+    return;
+  }
+
+  document.getElementById("loader").style.display = "none";
+  document.getElementById("ordersTable").style.display = "table";
+
+  // Sort newest first
+  filteredOrders.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+  filteredOrders.forEach((order, index) => {
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td>${order.item}</td>
+      <td>${order.email}</td>
+      <td>${order.quantity}</td>
+      <td>$${order.totalCost}</td>
+      <td>${order.timestamp}</td>
+      <td><button class="delete-btn" onclick="deleteOrder(${index})">Delete</button></td>
+    `;
+    body.appendChild(row);
+  });
+}
+
 
 // Delete order by index
 function deleteOrder(index) {
